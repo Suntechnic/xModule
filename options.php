@@ -79,7 +79,8 @@ if($REQUEST_METHOD == "POST" // проверка метода вызова ст�
 			$back_url.'&agents_result['.$i.']='.((hrtime(1)-$__start_time)/pow(10,9));
 		}
 	}
-
+	
+	LocalRedirect($back_url);	
 }
 
 

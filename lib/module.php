@@ -28,7 +28,7 @@ class Module extends \CModule
     public $MODULE_DESCRIPTION;
     
     // конфиги для загрузки
-    public $AGENTS = [];
+    public $AGENTS = false;
     public $OPTIONS = [];
     public $HANDLERS = [];
     
@@ -59,13 +59,6 @@ class Module extends \CModule
         $this->loadVersion();
         $this->loadDdscription();
         
-        // загрузка конфигурационных файлов
-        if (\Bitrix\Main\IO\File::isFileExists($this->MODULE_PATH_ABS.'/.agents.php'))
-                $this->AGENTS = include($this->MODULE_PATH_ABS.'/.agents.php');
-        if (\Bitrix\Main\IO\File::isFileExists($this->MODULE_PATH_ABS.'/.options.php'))
-                $this->OPTIONS = include($this->MODULE_PATH_ABS.'/.options.php');
-        if (\Bitrix\Main\IO\File::isFileExists($this->MODULE_PATH_ABS.'/.handlers.php'))
-                $this->HANDLERS = include($this->MODULE_PATH_ABS.'/.handlers.php');
     }
     
     private function loadDdscription () {
@@ -84,20 +77,48 @@ class Module extends \CModule
         }
     }
     
+    /*
+     * возвращает масив настроек модуля
+    */
     public function getOptions (): array
     {
+        if ($this->OPTIONS === false) {
+            if (\Bitrix\Main\IO\File::isFileExists($this->MODULE_PATH_ABS.'/.options.php'))
+                $this->OPTIONS = include($this->MODULE_PATH_ABS.'/.options.php');
+            if (!is_array($this->OPTIONS)) $this->OPTIONS = [];
+        }
         return $this->OPTIONS;
     }
+    #
     
+    /*
+     * возвращает масив перехватчиков
+    */
+    public function getHandlers (): array
+    {
+        if ($this->HANDLERS === false) {
+            if (\Bitrix\Main\IO\File::isFileExists($this->MODULE_PATH_ABS.'/.handlers.php'))
+                $this->HANDLERS = include($this->MODULE_PATH_ABS.'/.handlers.php');
+            if (!is_array($this->HANDLERS)) $this->HANDLERS = [];
+        }
+        return $this->HANDLERS;
+    }
+    
+    /*
+     * возвращает опции установленные для модуля
+    */
     public function getOptionsSets (): array
     {
         return \Bitrix\Main\Config\Option::getForModule($this->MODULE_ID);
     }
+    #
+    
     
     public function getOptionKey (string $code): string
     {
         return $code;
     }
+    
     
     public function getOption (string $code)
     {
@@ -301,7 +322,7 @@ class Module extends \CModule
     }
 	
 	public function InstallEvents () {
-		foreach ($this->HANDLERS as $arEvent) {
+		foreach ($this->getHandlers() as $arEvent) {
             \Bitrix\Main\EventManager::getInstance()->registerEventHandler(
                     $arEvent['module'],
 					$arEvent['event'],
@@ -309,19 +330,12 @@ class Module extends \CModule
 					$arEvent['class'], 
 					$arEvent['method']
                 );
-			//\RegisterModuleDependences(
-			//		$arEvent['module'],
-			//		$arEvent['event'],
-			//		$this->MODULE_ID,
-			//		$arEvent['class'], 
-			//		$arEvent['method']
-			//	);
 		}
 		return true;
 	}
 
 	public function UnInstallEvents () {
-		foreach ($this->HANDLERS as $arEvent) {
+		foreach ($this->getHandlers() as $arEvent) {
 			\Bitrix\Main\EventManager::getInstance()->unRegisterEventHandler(
 					$arEvent['module'],
 					$arEvent['event'],
@@ -335,6 +349,11 @@ class Module extends \CModule
     
     public function getAgents ()
     {
+        if ($this->AGENTS === false) {
+            if (\Bitrix\Main\IO\File::isFileExists($this->MODULE_PATH_ABS.'/.agents.php'))
+                $this->AGENTS = include($this->MODULE_PATH_ABS.'/.agents.php');
+            if (!is_array($this->AGENTS)) $this->AGENTS = [];
+        }
 		return $this->AGENTS;
 	}
     
@@ -374,10 +393,10 @@ class Module extends \CModule
         $installScript =  new \Bitrix\Main\IO\File($this->MODULE_PATH_ABS.'/install/install.php');
         if ($installScript->isExists()) include($installScript->getPath());
         
-		//$APPLICATION->IncludeAdminFile(
-		//		GetMessage($this->MODULE_SP."INSTALL_TITLE"),
-		//		$this->MODULE_PATH_ABS.'/install/step.php'
-		//	);
+		$APPLICATION->IncludeAdminFile(
+				GetMessage($this->MODULE_SP."INSTALL_TITLE"),
+				$this->MODULE_PATH_ABS.'/install/step.php'
+			);
     }
     
     public function DoUninstall() {
@@ -392,10 +411,10 @@ class Module extends \CModule
         $unInstallScript =  new \Bitrix\Main\IO\File($this->MODULE_PATH_ABS.'/install/uninstall.php');
         if ($unInstallScript->isExists()) include($unInstallScript->getPath());
         
-		//$APPLICATION->IncludeAdminFile(
-		//		GetMessage($this->MODULE_SP."INSTALL_TITLE"),
-		//		$this->MODULE_PATH_ABS.'/install/unstep.php'
-		//	);
+		$APPLICATION->IncludeAdminFile(
+				GetMessage($this->MODULE_SP."INSTALL_TITLE"),
+				$this->MODULE_PATH_ABS.'/install/unstep.php'
+			);
     }
 	
     
