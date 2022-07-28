@@ -29,8 +29,12 @@ class Module extends \CModule
     
     // конфиги для загрузки
     public $AGENTS = false;
-    public $OPTIONS = [];
-    public $HANDLERS = [];
+    public $OPTIONS = false;
+    public $HANDLERS = false;
+    
+    
+    private $LogDirPath = false;
+    private $debug = false;
     
     function __construct() {
         
@@ -59,6 +63,13 @@ class Module extends \CModule
         $this->loadVersion();
         $this->loadDdscription();
         
+        // отладка
+        $this->LogDirPath =
+            \Bitrix\Main\Application::getDocumentRoot()
+            .'/local/log/modules/'
+            .$this->MODULE_DIR;
+        
+        if ($this->getOption('debug') == 'Y') $this->debug = 1;
     }
     
     private function loadDdscription () {
@@ -172,7 +183,7 @@ class Module extends \CModule
         if ($this->regEntities === false) {
             $this->regEntities = [];
             
-            $arFilesEntity = glob($this->MODULE_PATH_ABS.'/li/tables/[abcdefghijklmnopqrstuvwxyz]*.php');
+            $arFilesEntity = glob($this->MODULE_PATH_ABS.'/tables/[abcdefghijklmnopqrstuvwxyz]*.php');
             if (count($arFilesEntity)) {
                 foreach ($arFilesEntity as $file) {
                     $entityName = '\\'.ucfirst($this->MODULE_SPACE)
@@ -277,12 +288,12 @@ class Module extends \CModule
 		}
         
         // js
-		//$arJs = $this->getJs();
-		//if (count($arJs)) {
-		//	foreach ($arJs as $libName) {
-		//		DeleteDirFilesEx('/bitrix/js/'.$this->MODULE_SPACE.'/'.$libName);
-		//	}
-		//}
+		$arJs = $this->getJs();
+		if (count($arJs)) {
+			foreach ($arJs as $libName) {
+				DeleteDirFilesEx('/bitrix/js/'.$this->MODULE_SPACE.'/'.$libName);
+			}
+		}
 		
 		// файлы в upload если модуль насоздавал
 		DeleteDirFilesEx('/upload/'.$this->MODULE_ID);
@@ -417,5 +428,38 @@ class Module extends \CModule
 			);
     }
 	
+    
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // debug
+    
+    public function log (string $Msg, array $arData=[], string $FileName='main' ) {
+        if (!$this->debug) return;
+        
+        $Data = "-------------------------------------------------------------------------------\n"
+                .date()."\n"
+                .$Msg."\n"
+                .print_r($arData,true)."\n\n";
+        \Bitrix\Main\IO\File::putFileContents($this->LogDirPath.'/'.$FileName.'.log', $Data, \Bitrix\Main\IO\File::APPEND);
+    }
+    
+    /*
+     * возвращает список объектов io файлов-логов
+    */
+    public function getLogs (): array
+    {
+        if (!$this->LogDirPath) return [];
+        
+        $lstLogsFiles = [];
+        $logDirectory = new \Bitrix\Main\IO\Directory($this->LogDirPath);
+        foreach ($logDirectory->getChildren() as $logFile) {
+            if ($logFile->isFile()
+                    && $logFile->getExtension() == 'log'
+                ) {
+                $lstLogsFiles[] = $logFile;
+            }
+        }
+        
+        return $lstLogsFiles;
+    }
     
 }
