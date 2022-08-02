@@ -10,7 +10,7 @@ class Module extends \CModule
 	public $MODULE_UID;
     public $MODULE_CODE;
     
-    public $MODULE_TYPE = "M";
+    public $MODULE_TYPE = 'M';
     
     
     public $MODULE; // deprecated
@@ -36,9 +36,9 @@ class Module extends \CModule
     private $LogDirPath = false;
     private $debug = false;
     
-    function __construct() {
+    function __construct(array $dctEnvModule=[]) {
         
-        $dctEnvModule = include(dirname(__DIR__).'/.env.php');
+        if (!count($dctEnvModule)) $dctEnvModule = include(dirname(__DIR__).'/.env.php');
         
         // определение путенй
         $this->MODULE_PATH_ABS = $dctEnvModule['PATH_ABS'];
