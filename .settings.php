@@ -3,7 +3,7 @@ return [
         //'controllers' => [
         //        'value' => [
         //                    'namespaces' => [
-        //                        '\\{Пространство}\\{Имя}\\Ajax' => 'api',
+        //                        '\\X\\Module\\Ajax' => 'api',
         //                    ],
         //            ],
         //        'readonly' => true,

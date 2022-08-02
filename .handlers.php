@@ -1,9 +1,9 @@
 <?php
 return [
-        [
-                'module' => 'sale',
-                'event' => '\Bitrix\Catalog\StoreProductTable::onBeforeUpdate',
-                'class' => '\Sdvv\Antistore\Stores',
-                'method' => 'updateAmount'
-            ],
+        //[
+        //        'module' => 'sale',
+        //        'event' => '\Bitrix\Catalog\StoreProductTable::onBeforeUpdate',
+        //        'class' => '\X\Module\Stores',
+        //        'method' => 'updateAmount'
+        //    ],
     ];
