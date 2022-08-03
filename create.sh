@@ -1,4 +1,6 @@
 #!/bin/bash
+# v0.0.1
+
 cd ..
 
 # подготавливаем переменны
@@ -26,8 +28,6 @@ rm -rf $1;
 cp -R 'x.module' $1;
 cd $1;
 
-
-
 # выполняем автозамену в файле иснталяции
 sed -i "s/X\\\Module/$PNS\\\\\\$NAME/g" install/index.php;
 sed -i "s/x_module/$MODULE_CLASS/g" install/index.php;
@@ -42,3 +42,12 @@ echo "<?php namespace Foo\Bar; \Bitrix\Main\Loader::includeModule('x.module'); \
 # анкоммент подключения модуля в include.php
 sed -i "s/#\\\Bitrix\\\Main\\\Loader::includeModule('x.module');/\\\Bitrix\\\Main\\\Loader::includeModule('x.module');/g" include.php;
 
+# удаление файлов-примеров
+find . -name "_example_*" -delete
+
+# удаление скриптов, кроме скрипта сборки
+find . -name "*.sh" -not -name "build.sh" -delete
+
+# удаление лишних md замена README
+find . -name "*.md" -not -name "README.md" -delete
+echo "# Модуль $MODULE_ID" > README.md;
