@@ -7,7 +7,7 @@ class x_module extends \X\Module\Module
     public $MODULE_ID = 'x.module';
     
     function __construct() {
-        $this->PARTNER_NAME = 'minisol';
+        $this->PARTNER_NAME = 'Minisol';
         $this->PARTNER_URI = 'https://minisol.ru';
         parent::__construct();
     }

@@ -40,6 +40,11 @@ if ($lstModuleAgents) $lstTabs[] = [
 		'DIV' => 'agents_module',
 		'TAB' => 'Агенты', 'ICON'=>'main_user_edit', 'TITLE'=> 'Агенты модуля'
 	];
+
+if ($lstLogs) $lstTabs[] = [
+		'DIV' => 'logs_module',
+		'TAB' => 'Журналы', 'ICON'=>'main_user_edit', 'TITLE'=> 'Журналы модуля'
+	];
 	
 if ($lstModuleOptionsTech) $lstTabs[] = [
 		'DIV' => 'options_tech_module',
@@ -84,6 +89,15 @@ if($REQUEST_METHOD == "POST" // проверка метода вызова ст�
 		}
 	}
 	
+	
+	// удаление журналов
+	$lstDelLogs = $request->get('deletelog');
+	foreach ($lstDelLogs as $i=>$name) {
+		if ($lstLogs[$i]->getName() === $name) {
+			$lstLogs[$i]->delete();
+		}
+	}
+	
 	// запуск агентов
 	$arAgents = $request->get('agents');
 	foreach ($arAgents as $i=>$name) {
@@ -124,99 +138,47 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_aft
 	foreach ($lstTabs as $dctTab) {
 		$tabControl->BeginNextTab();
 		if ($dctTab['DIV'] == 'options_module') {
-			foreach ($lstModuleOptions as $codeOption=>$dctOpt): $curVal = $selfModule->getOption($codeOption);?>
-			<tr>
-				<td width="40%"><?=$dctOpt['title']?></td>
-				<td width="60%">
-				<?if ($dctOpt['options']):
-					if (is_array($dctOpt['options'])) {
-						$arOptions = $dctOpt['options'];
-					} elseif (is_string($dctOpt['options'])) {
-						$arOptions = $selfModule->{$dctOpt['options']}();
-					}
-					?>
-					<select name="options[module][<?=$codeOption;?>]" class="typeselect">
-						<option value=""></option>
-						<?foreach($arOptions as $Val=>$title):?>
-						<option value="<?=$Val?>" <?if($Val == $curVal):?>selected<?endif?>><?=$title?></option>
-						<?endforeach?>
-					</select>
-				<?elseif ($dctOpt['value']):
-					$Val=$dctOpt['value'];
-					
-					$InputId = $codeOption.'_'.$rnd->randString(8);?>
-					
-					<input
-							type="checkbox"
-							id="<?=$InputId?>"
-							name="options[module][<?=$codeOption;?>]"
-							value="<?=$Val?>"
-							<?if($Val == $curVal):?>checked="checked"<?endif?>
-							class="adm-designed-checkbox"
-						><label
-								class="adm-designed-checkbox-label"
-								for="<?=$InputId?>"
-								title="<?=$dctOpt['title']?>"
-							></label>
-				<?else:?>
-					<input
-							type="text"
-							name="options[module][<?=$codeOption;?>]"
-							value="<?=$curVal?>"
-						/>
-				<?endif?>
-				</td>
-			</tr>
-			<?endforeach;
+			foreach ($lstModuleOptions as $codeOption=>$dctOpt):
+				echo \X\Module\Util\Html::adminTabRow(
+						$dctOpt['title'],
+						\X\Module\Util\Html::optionInput($codeOption, $dctOpt, $selfModule->getOption($codeOption))
+					);
+			endforeach;
 		} elseif ($dctTab['DIV'] == 'options_tech_module') {
-			?>
-			<tr>
-				<th colspan="2" style="text-align:center;">Внимание! Не изменяйте эти параметры если не знаете что это такое!</th>
-			</tr>
-			<?foreach ($lstModuleOptionsTech as $codeOption=>$dctOpt):?>
-				<tr>
-					<td width="40%"><?=$dctOpt['title']?></td>
-					<td width="60%"><input
-							type="text"
-							name="options[module][<?=$codeOption;?>]"
-							value="<?=$selfModule->getOption($codeOption)?>"
-						/></td>
-				</tr>
-			<?endforeach;
+			echo \X\Module\Util\Html::adminTabRow('Внимание! Не изменяйте эти параметры если не знаете что это такое!');
+			foreach ($lstModuleOptionsTech as $codeOption=>$dctOpt):
+				echo \X\Module\Util\Html::adminTabRow(
+						$dctOpt['title'],
+						\X\Module\Util\Html::optionInput($codeOption, $dctOpt, $selfModule->getOption($codeOption))
+					);
+			endforeach;
 		} elseif ($dctTab['DIV'] == 'agents_module') {
 			
 			$request = \Bitrix\Main\Application::getInstance()->getContext()->getRequest();
 			$arAgentsResult = $request->get('agents_result');
 			
+			echo \X\Module\Util\Html::adminTabRow('Отмеченные агенты модуля будут выполнены после сохранения настроек в том же хите.');
+			
 			foreach ($lstModuleAgents as $i=>$dctAgent):
 				$InputId = 'agent_'.$i.'_'.$rnd->randString(8);
-				$TimeResult = $arAgentsResult[$i];
-				?>
-				<tr>
-					<th colspan="2" style="text-align:center;">Отмеченные агенты модуля будут выполнены после сохранения настроек в том же хите.</th>
-				</tr>
-				<tr>
-					<td width="40%"><?=$dctAgent['title']?></td>
-					<td width="60%">
-						
-						<input
-							type="checkbox"
-							id="<?=$InputId?>"
-							name="agents[<?=$i;?>]"
-							value="<?=$dctAgent['name']?>"
-							class="adm-designed-checkbox"
-						><label
-								class="adm-designed-checkbox-label"
-								for="<?=$InputId?>"
-								title="Выполнить"
-							></label>
-						<?=$dctAgent['name']?>
-						<?if ($TimeResult):?>
-						<strong>Выполнен. Время выполнения: <?=$TimeResult?></strong>
-						<?endif?>
-					</td>
-				</tr>
-			<?endforeach;
+				echo \X\Module\Util\Html::adminTabRow(
+						$dctAgent['title'],
+						\X\Module\Util\Html::optionInput($dctAgent, $arAgentsResult[$i])
+					);
+			endforeach;
+		} elseif ($dctTab['DIV'] == 'logs_module') {
+			
+			if ($selfModule->getOption('debug') == 'Y'):
+				echo \X\Module\Util\Html::adminTabRow('Сейчас отладка включена.
+					Для остановки записи в журналы, снимите флажок <b>Отладка</b> на вкладке <b>Общие параметры</b>.');
+			
+			endif;
+			
+			foreach ($lstLogs as $i=>$fileLog):
+				echo \X\Module\Util\Html::adminTabRow(
+						\X\Module\Util\Html::log($i,$fileLog)
+					);	
+			endforeach;
 		} else {
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			// Дополнительные вкладки модуля

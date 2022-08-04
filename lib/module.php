@@ -6,19 +6,20 @@ namespace X\Module;
 class Module extends \CModule
 {
     // параметры модуля
-    public $MODULE_SPACE;
-	public $MODULE_UID;
-    public $MODULE_CODE;
+    public $MODULE_SPACE; // пространство размещения модуля (x)
+	public $MODULE_UID; // идентификатора модуля (module)
+    public $MODULE_CODE; // код модуля - идентификатор в апперкейсе (MODULE)
     
-    public $MODULE_TYPE = 'M';
-    
+    public $MODULE_TYPE = 'M'; // тип модуля - модулья (M - модуль, C - набор компонентов)
     
     public $MODULE; // deprecated
-    public $MODULE_ID;
+    public $MODULE_ID; // id модуля (x.module)
     
-    public $MODULE_NS; // неймспейс модуля
+    public $MODULE_BXCLASS; // bitrix-класс модуля (x_module)
+    
+    public $MODULE_NS; // неймспейс классов модуля (\X\Module)
 	
-	public $MODULE_DIR; // имя папки модуля == MODULE
+	public $MODULE_DIR; // имя папки модуля == MODULE или MODULE_ID
     public $MODULE_PATH; // путь к папке модуля
 	public $MODULE_PATH_ABS; // абсолютный путь к папке модуля
     
@@ -52,6 +53,8 @@ class Module extends \CModule
         $this->MODULE_SPACE = $dctEnvModule['SPACE'];
         $this->MODULE_UID = $dctEnvModule['UID'];
         $this->MODULE_CODE = $dctEnvModule['CODE'];
+        
+        $this->MODULE_BXCLASS = $this->MODULE_SPACE.'_'.$this->MODULE_UID;
         
         // пространство имен
         $this->MODULE_NS = $dctEnvModule['NS'];
@@ -253,7 +256,7 @@ class Module extends \CModule
                 if (file_exists($path)) require($path);
                 ';
                 
-                $pathAdminFile =\Bitrix\Main\Application::getDocumentRoot().'/bitrix/admin/'.$admFile;
+                $pathAdminFile =\Bitrix\Main\Application::getDocumentRoot().'/bitrix/admin/'.$this->MODULE_BXCLASS.'_'.$admFile;
                 
                 $adminFile = new \Bitrix\Main\IO\File($pathAdminFile);
                 
@@ -283,7 +286,7 @@ class Module extends \CModule
         $arAdminFiles = $this->getAdminFiles();
 		if (count($arAdminFiles)) {
 			foreach ($arAdminFiles as $admFile) {
-				DeleteDirFilesEx('/bitrix/admin/'.$admFile);
+				DeleteDirFilesEx('/bitrix/admin/'.$this->MODULE_BXCLASS.'_'.$admFile);
 			}
 		}
         
