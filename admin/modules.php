@@ -27,31 +27,27 @@ if($REQUEST_METHOD == "POST" // проверка метода вызова ст�
 	if ($request->get('create')) {
 		$dctOptionsModule = $request->get('options')['module'];
 		
-		$MODULE_DIR = $dctOptionsModule['id'];
-		$MODULE_PATH_ABS = \Bitrix\Main\Application::getDocumentRoot().'/local/modules/'.$MODULE_DIR;
+		$dctProps = \X\Module\Modules::getModuleProps($dctOptionsModule['id']);
 		
-		$PARTNER_NAME = $dctOptionsModule['partner_name'];
-		$PARTNER_URI = $dctOptionsModule['partner_uri'];
-		
-		$lstDebris = explode('.',$MODULE_DIR);
+		if ($dctProps) {
+			
+			$MODULE_PATH_ABS = \Bitrix\Main\Application::getDocumentRoot()
+					.'/local/modules/'.$dctProps['MODULE_DIR'];
 
-		$MODULE_PNS = $lstDebris[0];
-		$MODULE_NAME = $lstDebris[1];
-		$MODULE_ID = $MODULE_PNS.'.'.$MODULE_NAME;
-		
-		$MODULE_CLASS = $MODULE_PNS.'_'.$MODULE_NAME;
-		$MODULE_SP = strtoupper($MODULE_PNS).'_M_'.strtoupper($MODULE_NAME).'_';
-		
-		if ($MODULE_DIR == $MODULE_ID) {
-			
-			$PNS = ucfirst($MODULE_PNS);
-			$NAME = ucfirst($MODULE_NAME);
-			$CLASS = $PNS.'\\'.$NAME;
-			
-			
+			$PARTNER_NAME = $dctOptionsModule['partner_name'];
+			$PARTNER_URI = $dctOptionsModule['partner_uri'];
 			
 			$dir = new \Bitrix\Main\IO\Directory($MODULE_PATH_ABS);
 			if ($dir->isExists()) {
+				
+				CopyDirFiles(
+						$dir->getPath().'/include.php',
+						$dir->getPath().'/include.php~',
+						true,
+						true
+					);
+				unlink($dir->getPath().'/include.php');
+				
 				CopyDirFiles(
 						$dir->getPath(),
 						$dir->getPath().'_old_'.time(),
@@ -75,9 +71,9 @@ if($REQUEST_METHOD == "POST" // проверка метода вызова ст�
 			$Install_indexContent = $install_index->getContents();
 			$Install_indexContent = str_replace(
 					[
-							'X\Module',			'x_module',		'x.module',	'Minisol',		'https://minisol.ru'
+							'X\Module','x_module','x.module','Minisol','https://minisol.ru'
 						],
-					[		$PNS.'\\'.$NAME,	$MODULE_CLASS,	$MODULE_ID,	$PARTNER_NAME,	$PARTNER_URI
+					[		$dctProps['CLASS'],	$dctProps['MODULE_CLASS'],$dctProps['MODULE_ID'],$PARTNER_NAME,$PARTNER_URI
 						],
 					$Install_indexContent
 				);
@@ -88,9 +84,9 @@ if($REQUEST_METHOD == "POST" // проверка метода вызова ст�
 			$Lang_ru_lib_moduleContent = $lang_ru_lib_module->getContents();
 			$Lang_ru_lib_moduleContent = str_replace(
 					[
-							'X_M_MODULE_',	'Minisol',		'https://minisol.ru'
+							'X_M_MODULE_',				'Minisol',		'https://minisol.ru'
 						],
-					[		$MODULE_SP,		$PARTNER_NAME,	$PARTNER_URI
+					[		$dctProps['MODULE_SP'],		$PARTNER_NAME,	$PARTNER_URI
 						],
 					$Lang_ru_lib_moduleContent
 				);
@@ -98,18 +94,23 @@ if($REQUEST_METHOD == "POST" // проверка метода вызова ст�
 			
 			//lib/module.php
 			$lib_module = new \Bitrix\Main\IO\File($MODULE_PATH_ABS.'/lib/module.php');
-			$lib_module->putContents(`<?php
-namespace Foo\Bar;
-\Bitrix\Main\Loader::includeModule('x.module');
+			$lib_module->putContents(
+'<?php
+namespace '.$dctProps['CLASS'].';
+
+\Bitrix\Main\Loader::includeModule(\'x.module\');
 \Bitrix\Main\Localization\Loc::loadMessages(__FILE__);
+
 class Module extends \X\Module\Module
 {
 	function __construct(array $dctEnvModule=[])
 	{
-		if(!count($dctEnvModule)) $dctEnvModule = include(dirname(__DIR__).'/.env.php');
+		if(!count($dctEnvModule)) $dctEnvModule = include(dirname(__DIR__).\'/.env.php\');
 		return parent::__construct($dctEnvModule);
 	}
-}`);
+}'
+				);
+
 			// очистка конфигураций
 			$lstConfigs = [
 					//'/.env.php', // автоконфигурация
@@ -144,7 +145,6 @@ class Module extends \X\Module\Module
 			foreach ($lstPatternsForDel as $Pattern) {
 				array_push($lstPathesForDel, ...glob($MODULE_PATH_ABS.$Pattern));
 			}
-			
 			foreach ($lstPathesForDel as $Path) {
 				(new \Bitrix\Main\IO\Directory($Path))->delete(true);
 			}
@@ -190,11 +190,15 @@ $lstModules = new \X\Module\Modules;
     //********************
     $tabControl->BeginNextTab();
     if ($lstModules->count()) {
-		foreach ($lstModules as $module): \Kint::dump($arResult);
-			?><tr><td><?=$lstModules->count()?></td><td><pre><?=$module?></pre></td></tr><?
+		foreach ($lstModules as $module):
+			echo \X\Module\Util\Html::adminTabRow(
+					'<b>'.$module->MODULE_NAME.'</b> ('.$module->MODULE_ID.')<br>'.$module->MODULE_DESCRIPTION,
+					$module->isInstalled()?'Установлен':'Не установлен'
+				);
+			//\Kint::dump($module);
 		endforeach;
 	} else {
-		echo \X\Module\Util\Html::adminTabRow('Пока нет модулей наследуемых от xModule');
+		echo \X\Module\Util\Html::adminTabRow('Пока нет модулей зависимых от xModule');
 	}
 
     

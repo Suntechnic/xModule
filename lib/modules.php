@@ -18,8 +18,24 @@ class Modules implements \Iterator
         foreach ($this->lstBitrixModuleDirs as $BxModuleFolder) {
             array_push($lstModulesDirsPathes, ...glob(\Bitrix\Main\Application::getDocumentRoot().$BxModuleFolder.'/*'));
         }
-        foreach ($lstModulesDirsPathes as $ModuleDirPathe) {
-            if () {
+        
+        foreach ($lstModulesDirsPathes as $ModuleDirPath) {
+            if (\Bitrix\Main\IO\File::isFileExists($ModuleDirPath.'/lib/module.php')) {
+                $MODULE_ID = basename($ModuleDirPath);
+                if ('x.module' != $MODULE_ID) {
+                    if (!\Bitrix\Main\Loader::includeModule($MODULE_ID)) {
+                        include($ModuleDirPath.'/lib/module.php');
+                    }
+                    $dctProps = \X\Module\Modules::getModuleProps($MODULE_ID);;
+                    if ($dctProps) {
+                        $ModuleObjectClass = '\\'.$dctProps['CLASS'].'\Module';
+                        if (class_exists($ModuleObjectClass,true)
+                                && get_parent_class($ModuleObjectClass) == 'X\Module\Module'
+                            ) {
+                            $this->lstModules[] = new $ModuleObjectClass;
+                        }
+                    }
+            }
                 
             }
         }
@@ -55,4 +71,29 @@ class Modules implements \Iterator
     {
         return count($this->lstModules);
     }
+    
+    
+    //
+    static public function getModuleProps (string $MODULE_ID): array
+    {
+        $dctProps['MODULE_DIR'] = $MODULE_ID;
+		
+		$lstDebris = explode('.',$dctProps['MODULE_DIR']);
+
+		$dctProps['MODULE_PNS'] = $lstDebris[0];
+		$dctProps['MODULE_NAME'] = $lstDebris[1];
+		$dctProps['MODULE_ID'] = $dctProps['MODULE_PNS'].'.'.$dctProps['MODULE_NAME'];
+		
+		$dctProps['MODULE_CLASS'] = $dctProps['MODULE_PNS'].'_'.$dctProps['MODULE_NAME'];
+		$dctProps['MODULE_SP'] = strtoupper($dctProps['MODULE_PNS']).'_M_'.strtoupper($dctProps['MODULE_NAME']).'_';
+		
+		if ($dctProps['MODULE_DIR'] == $dctProps['MODULE_ID']) {
+			$dctProps['PNS'] = ucfirst($dctProps['MODULE_PNS']);
+			$dctProps['NAME'] = ucfirst($dctProps['MODULE_NAME']);
+			$dctProps['CLASS'] = $dctProps['PNS'].'\\'.$dctProps['NAME'];
+        } else return [];
+        
+        return $dctProps;
+    }
+    
 }
