@@ -29,9 +29,7 @@ class Module extends \CModule
     public $MODULE_DESCRIPTION;
     
     // конфиги для загрузки
-    public $AGENTS = false;
-    public $OPTIONS = false;
-    public $HANDLERS = false;
+    private $CONFIG = [];
     
     
     private $LogDirPath = false;
@@ -91,32 +89,34 @@ class Module extends \CModule
         }
     }
     
-    /*
-     * возвращает масив настроек модуля
-    */
-    public function getOptions (): array
+    public function getSetup (string $SetupName): array
     {
-        if ($this->OPTIONS === false) {
-            if (\Bitrix\Main\IO\File::isFileExists($this->MODULE_PATH_ABS.'/.options.php'))
-                $this->OPTIONS = include($this->MODULE_PATH_ABS.'/.options.php');
-            if (!is_array($this->OPTIONS)) $this->OPTIONS = [];
+        $SetupFile = '.'.strtolower($SetupName).'.php';
+        if (!is_array($this->CONFIG[$SetupName])) {
+            if (\Bitrix\Main\IO\File::isFileExists($this->MODULE_PATH_ABS.'/'.$SetupFile))
+                $this->CONFIG[$SetupName] = include($this->MODULE_PATH_ABS.'/'.$SetupFile);
+            if (!is_array($this->CONFIG[$SetupName])) $this->CONFIG[$SetupName] = [];
         }
-        return $this->OPTIONS;
+        return $this->CONFIG[$SetupName];
     }
-    #
+    
     
     /*
      * возвращает масив перехватчиков
     */
     public function getHandlers (): array
     {
-        if ($this->HANDLERS === false) {
-            if (\Bitrix\Main\IO\File::isFileExists($this->MODULE_PATH_ABS.'/.handlers.php'))
-                $this->HANDLERS = include($this->MODULE_PATH_ABS.'/.handlers.php');
-            if (!is_array($this->HANDLERS)) $this->HANDLERS = [];
-        }
-        return $this->HANDLERS;
+        return $this->getSetup('handlers');
     }
+    
+    /*
+     * возвращает масив настроек модуля
+    */
+    public function getOptions (): array
+    {
+        return $this->getSetup('options');
+    }
+    #
     
     /*
      * возвращает опции установленные для модуля
@@ -127,7 +127,9 @@ class Module extends \CModule
     }
     #
     
-    
+    /*
+     * возвращает ключ хранения опции в БД по коду опции
+    */
     public function getOptionKey (string $code): string
     {
         return $code;
@@ -153,8 +155,27 @@ class Module extends \CModule
                 $value
             );
     }
+    
+    public function getSettings ()
+    {
+        return $this->getSetup('settings');
+    }
+    
+    /*
+     * возвращает паметр конфигурации, или секуцию конфигурации, или полностью конфигурационный массив
+    */
+	public function getConfig (string $section='', string $param='')
+    {
+        $dctSettings = $this->getSetup('config');
+        if ($section == '') return $dctSettings;
+        if ($param == '') return $dctSettings[$section];
+        return $dctSettings[$section][$param];
+    }
+    #
 	
-	
+    /*
+     * вовзрващает компоненты модуля
+    */
 	public function getComponents ()
     {
 		return array_map(
@@ -162,7 +183,11 @@ class Module extends \CModule
 				glob($this->MODULE_PATH_ABS.'/install/components/'.$this->MODULE_SPACE.'/[abcdefghijklmnopqrstuvwxyz\.]*')
 			);
     }
+    #
     
+    /*
+     * возвращает список файлов из папки /admin/
+    */
     public function getAdminFiles ()
     {
 		return array_map(
@@ -170,13 +195,18 @@ class Module extends \CModule
 				glob($this->MODULE_PATH_ABS.'/admin/[-_abcdefghijklmnopqrstuvwxyz\.]*.php')
 			);
     }
+    #
     
+    /*
+     * возвращает список библиотек модуля
+    */
     public function getJs() {
 		return array_map(
 				function ($p) {return str_replace($this->MODULE_PATH_ABS.'/install/js/'.$this->MODULE_SPACE.'/','',$p);}, 
 				glob($this->MODULE_PATH_ABS.'/install/js/'.$this->MODULE_SPACE.'/[abcdefghijklmnopqrstuvwxyz\.]*')
 			);
     }
+    #
 	
     #TODO: придумать обобщенный способ автозагрузки сущностьей - просто переместить /tables/ в lib?
     private $regEntities = false;
@@ -363,12 +393,7 @@ class Module extends \CModule
     
     public function getAgents ()
     {
-        if ($this->AGENTS === false) {
-            if (\Bitrix\Main\IO\File::isFileExists($this->MODULE_PATH_ABS.'/.agents.php'))
-                $this->AGENTS = include($this->MODULE_PATH_ABS.'/.agents.php');
-            if (!is_array($this->AGENTS)) $this->AGENTS = [];
-        }
-		return $this->AGENTS;
+        return $this->getSetup('agents');
 	}
     
     public function InstallAgents (): bool

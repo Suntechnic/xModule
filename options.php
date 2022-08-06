@@ -10,7 +10,6 @@ if (!\Bitrix\Main\Loader::includeModule($dctEnvModule['ID'])) {
 	return;
 }
 
-$rnd = new \Bitrix\Main\Type\RandomSequence;
 $selfModule = new $dctEnvModule['CLASS']();
 
 $lstModuleOptions = $selfModule->getOptions();
@@ -36,22 +35,20 @@ if ($lstModuleOptions) $lstTabs[] = [
 // Дополнительные вкладки модуля
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-if ($lstModuleAgents) $lstTabs[] = [
+if ($lstModuleAgents && $selfModule->getConfig('optionspage','showagents')) $lstTabs[] = [
 		'DIV' => 'agents_module',
 		'TAB' => 'Агенты', 'ICON'=>'main_user_edit', 'TITLE'=> 'Агенты модуля'
 	];
 
-if ($lstLogs) $lstTabs[] = [
+if ($lstLogs && $selfModule->getConfig('optionspage','showlogs')) $lstTabs[] = [
 		'DIV' => 'logs_module',
 		'TAB' => 'Журналы', 'ICON'=>'main_user_edit', 'TITLE'=> 'Журналы модуля'
 	];
 	
-if ($lstModuleOptionsTech) $lstTabs[] = [
+if ($lstModuleOptionsTech && $selfModule->getConfig('optionspage','showtechoptins')) $lstTabs[] = [
 		'DIV' => 'options_tech_module',
 		'TAB' => 'Технические параметры', 'ICON'=>'main_user_edit', 'TITLE'=> 'Технические параметры модуля'
 	];
-
-
 
 
 $tabControl = new CAdminTabControl("tabControl", $lstTabs);
@@ -160,7 +157,6 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_aft
 			echo \X\Module\Util\Html::adminTabRow('Отмеченные агенты модуля будут выполнены после сохранения настроек в том же хите.');
 			
 			foreach ($lstModuleAgents as $i=>$dctAgent):
-				$InputId = 'agent_'.$i.'_'.$rnd->randString(8);
 				echo \X\Module\Util\Html::adminTabRow(
 						$dctAgent['title'],
 						\X\Module\Util\Html::optionInput($dctAgent, $arAgentsResult[$i])
