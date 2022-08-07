@@ -163,7 +163,6 @@ class Module extends \X\Module\Module
 
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_after.php"); // второй общий пролог
 
-
 //if($_REQUEST["mess"] == "ok" && $ID>0)
 //    CAdminMessage::ShowMessage(array("MESSAGE"=>GetMessage("rub_saved"), "TYPE"=>"OK"));
 //

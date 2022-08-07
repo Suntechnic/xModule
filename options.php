@@ -50,6 +50,17 @@ if ($lstModuleOptionsTech && $selfModule->getConfig('optionspage','showtechoptin
 		'TAB' => 'Технические параметры', 'ICON'=>'main_user_edit', 'TITLE'=> 'Технические параметры модуля'
 	];
 
+$lstMD = [
+		'README' => $selfModule->getDoc('README'),
+		'CHANGELOG' => $selfModule->getDoc('CHANGELOG'),
+	];
+foreach ($lstMD as $key=>$val) {
+	if ($val && strlen($val) > 2 && $selfModule->getConfig('optionspage','showreadme')) $lstTabs[] = [
+			'DIV' => $key,
+			'TAB' => $key, 'ICON'=>'main_user_edit'
+		];
+}
+
 
 $tabControl = new CAdminTabControl("tabControl", $lstTabs);
 
@@ -175,6 +186,8 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_aft
 						\X\Module\Util\Html::log($i,$fileLog)
 					);	
 			endforeach;
+		} elseif ($lstMD[$dctTab['DIV']]) {
+			echo $lstMD[$dctTab['DIV']];
 		} else {
 			////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			// Дополнительные вкладки модуля

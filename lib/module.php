@@ -73,20 +73,27 @@ class Module extends \CModule
         if ($this->getOption('debug') == 'Y') $this->debug = 1;
     }
     
-    private function loadDdscription () {
+    private function loadDdscription ()
+    {
         $this->MODULE_NAME = GetMessage($this->MODULE_SP.'INSTALL_NAME');
 		$this->MODULE_DESCRIPTION = GetMessage($this->MODULE_SP.'INSTALL_DESCRIPTION');
 		$this->PARTNER_NAME = GetMessage($this->MODULE_SP.'PARTNER');
 		$this->PARTNER_URI = GetMessage($this->MODULE_SP.'PARTNER_URI');
     }
     
-    private function loadVersion () {
+    private function loadVersion ()
+    {
         $arModuleVersion = array();
         include($this->MODULE_PATH_ABS.'/install/version.php');
         if (is_array($arModuleVersion) && array_key_exists('VERSION', $arModuleVersion)) {
             $this->MODULE_VERSION = $arModuleVersion['VERSION'];
             $this->MODULE_VERSION_DATE = $arModuleVersion['VERSION_DATE'];
         }
+    }
+    
+    public function loadComposerLibs ()
+    {
+        include($this->MODULE_PATH_ABS.'/composer/vendor/autoload.php');
     }
     
     public function getSetup (string $SetupName): array
@@ -489,5 +496,23 @@ class Module extends \CModule
         
         return $lstLogsFiles;
     }
+    
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // файлы документации
+    
+    private $parserMD;
+    public function getDoc (string $FileName)
+    {
+        $FileName = strtoupper($FileName).'.md';
+        
+        if (\Bitrix\Main\IO\File::isFileExists($this->MODULE_PATH_ABS.'/'.$FileName)) {
+            $file = new \Bitrix\Main\IO\File($this->MODULE_PATH_ABS.'/'.$FileName);
+            
+            if (!$this->parserMD) $this->parserMD = new \cebe\markdown\MarkdownExtra();
+            return $this->parserMD->parse($file->getContents());
+        }
+        return '';
+    }
+    
     
 }
