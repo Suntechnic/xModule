@@ -10,8 +10,6 @@ class Module extends \CModule
 	public $MODULE_UID; // идентификатора модуля (module)
     public $MODULE_CODE; // код модуля - идентификатор в апперкейсе (MODULE)
     
-    public $MODULE_TYPE = 'M'; // тип модуля - модулья (M - модуль, C - набор компонентов)
-    
     public $MODULE; // deprecated
     public $MODULE_ID; // id модуля (x.module)
     
@@ -58,7 +56,7 @@ class Module extends \CModule
         $this->MODULE_NS = $dctEnvModule['NS'];
 		
         // строковй префикс
-		$this->MODULE_SP = strtoupper($this->MODULE_SPACE)."_".$this->MODULE_TYPE."_".$this->MODULE_CODE."_";
+		$this->MODULE_SP = strtoupper($this->MODULE_SPACE).'_'.$this->MODULE_CODE."_";
         
         // загрузка данных о модуле
         $this->loadVersion();
