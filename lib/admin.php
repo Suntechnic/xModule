@@ -1,9 +1,11 @@
 <?php
 
-use Bitrix\Main\Localization\Loc;
-Loc::loadMessages(__FILE__);
+
 
 namespace X\Module {
+    
+    use Bitrix\Main\Localization\Loc;
+    Loc::loadMessages(__FILE__);
 
     class Admin {
         public static function buildMenu (&$aGlobalMenu, &$aModuleMenu) {

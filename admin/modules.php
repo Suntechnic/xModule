@@ -9,12 +9,25 @@ if (!\Bitrix\Main\Loader::includeModule('x.module')) {
 	return;
 }
 
+use Bitrix\Main\Localization\Loc;
+Loc::loadMessages(__FILE__);
+
 
 $lstTabs = array(
-    array("DIV" => "modulеs", "TAB" => 'Модуля основанные на xModule', "ICON"=>"main_user_edit", "TITLE"=> 'Список модулей наследуемых от xModule'),
-	array("DIV" => "create", "TAB" => 'Создание модуя', "ICON"=>"main_user_edit", "TITLE"=> 'Создание нового модуля на базе xModule')
+    [
+			'DIV' => 'modulеs',
+			'TAB' => Loc::getMessage('X_MODULE_ADMIN_MODULES_TABBASEDMODULES'),
+			'ICON'=>'main_user_edit',
+			'TITLE'=> Loc::getMessage('X_MODULE_ADMIN_MODULES_TABTITLEBASEDMODULES'),
+		],
+	[
+			'DIV' => 'create',
+			'TAB' => Loc::getMessage('X_MODULE_ADMIN_MODULES_TABCREATED'),
+			'ICON'=>'main_user_edit',
+			'TITLE'=> Loc::getMessage('X_MODULE_ADMIN_MODULES_TABTITLECREATED'),
+		]
 );
-$tabControl = new CAdminTabControl("tabControl", $lstTabs);
+$tabControl = new CAdminTabControl('tabControl', $lstTabs);
 
 $selfModule = new \X\Module\Module;
 
@@ -135,6 +148,7 @@ class Module extends \X\Module\Module
 					'/lib/modules.php',
 					
 					'/lang/ru/lib/admin.php',
+					'/lang/ru/admin/modules.php',
 					
 					'/*.md',
 					
@@ -152,7 +166,7 @@ class Module extends \X\Module\Module
 			}
 			
 		} else {
-			$dctResponceParams['errors'][] = 'Некорректный id модуля';
+			$dctResponceParams['errors'][] = Loc::getMessage('X_MODULE_ADMIN_MODULES_ERRORINVALIDID');
 		}
 
 	}
@@ -192,31 +206,32 @@ $lstModules = new \X\Module\Modules;
     $tabControl->BeginNextTab();
     if ($lstModules->count()) {
 		foreach ($lstModules as $module):
+			$InstalledStatus = $module->isInstalled()?(Loc::getMessage('X_MODULE_ADMIN_MODULES_INSTALLED')):(Loc::getMessage('X_MODULE_ADMIN_MODULES_NOTINSTALLED'));
 			echo \X\Module\Util\Html::adminTabRow(
 					'<b>'.$module->MODULE_NAME.'</b> ('.$module->MODULE_ID.')<br>'.$module->MODULE_DESCRIPTION,
-					$module->isInstalled()?'Установлен':'Не установлен'
+					$InstalledStatus
 				);
 			//\Kint::dump($module);
 		endforeach;
 	} else {
-		echo \X\Module\Util\Html::adminTabRow('Пока нет модулей зависимых от xModule');
+		echo \X\Module\Util\Html::adminTabRow(Loc::getMessage('X_MODULE_ADMIN_MODULES_NOMODULES'));
 	}
 
     
     $tabControl->BeginNextTab();
 	echo \X\Module\Util\Html::adminTabRow(
-			'ID модуля',
+			Loc::getMessage('X_MODULE_ADMIN_MODULES_FIELDMODULEID'),
 			\X\Module\Util\Html::optionInput('id', [])
 		);
 	echo \X\Module\Util\Html::adminTabRow(
-			'Название партнёра',
+			Loc::getMessage('X_MODULE_ADMIN_MODULES_FIELDPARTNER'),
 			\X\Module\Util\Html::optionInput('partner_name', [])
 		);
 	echo \X\Module\Util\Html::adminTabRow(
-			'Адрес сайта партнёра',
+			Loc::getMessage('X_MODULE_ADMIN_MODULES_FIELDPARTNERSITE'),
 			\X\Module\Util\Html::optionInput('partner_uri', [])
 		);
-	echo \X\Module\Util\Html::adminTabRow('<input type="submit" name="create" value="Создать" title="Создать модуль" class="adm-btn-save">');
+	echo \X\Module\Util\Html::adminTabRow('<input type="submit" name="create" value="'.Loc::getMessage('X_MODULE_ADMIN_MODULES_FIELDCREATED').'" class="adm-btn-save">');
 
 	//********************
 	// вторая закладка - параметры автоматической генерации рассылки
