@@ -134,6 +134,8 @@ class Module extends \X\Module\Module
 					'/lib/admin.php',
 					'/lib/modules.php',
 					
+					'/lang/ru/lib/admin.php',
+					
 					'/*.md',
 					
 					'/_example_*',

@@ -1,8 +1,10 @@
 <?php
 // файл должен возвращать массив параметров модуля
+use Bitrix\Main\Localization\Loc;
+Loc::loadMessages(__FILE__);
 return [
         'debug' => [
-                'title' => 'Отладка',
+                'title' => Loc::getMessage('X_MODULE_OPTIONS_DEBUG'),
                 'value' => 'Y'
             ],
 //		'option_text' => [
