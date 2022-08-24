@@ -23,6 +23,9 @@ foreach ($lstModuleOptionsSets as $CodeOption=>$ValueOption) {
 // агенты
 $lstModuleAgents = $selfModule->getAgents();
 
+// ajax контроллеры
+$refAjaxControllers = $selfModule->getAjaxControllers();
+
 $lstTabs = [];
 
 if ($lstModuleOptions) $lstTabs[] = [
@@ -38,6 +41,11 @@ if ($lstModuleOptions) $lstTabs[] = [
 if ($lstModuleAgents && $selfModule->getConfig('optionspage','showagents')) $lstTabs[] = [
 		'DIV' => 'agents_module',
 		'TAB' => 'Агенты', 'ICON'=>'main_user_edit', 'TITLE'=> 'Агенты модуля'
+	];
+
+if ($refAjaxControllers && $selfModule->getConfig('optionspage','showajaxapi')) $lstTabs[] = [
+		'DIV' => 'ajax_module',
+		'TAB' => 'Ajax', 'ICON'=>'main_user_edit', 'TITLE'=> 'Ajax API модуля'
 	];
 
 if ($lstLogs && $selfModule->getConfig('optionspage','showlogs')) $lstTabs[] = [
@@ -173,6 +181,14 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_aft
 						\X\Module\Util\Html::optionInput($dctAgent, $arAgentsResult[$i])
 					);
 			endforeach;
+		} elseif ($dctTab['DIV'] == 'ajax_module') {
+			
+			foreach ($refAjaxControllers as $class=>$alias):
+				echo \X\Module\Util\Html::adminTabRow(
+						$class.'=>'.$alias
+					);
+			endforeach;
+			
 		} elseif ($dctTab['DIV'] == 'logs_module') {
 			
 			if ($selfModule->getOption('debug') == 'Y'):

@@ -5,6 +5,7 @@ return [
                 'showagents' => true,
                 'showtechoptins' => true,
                 'showreadme' => true,
-                'showchangelog' => true
+                'showchangelog' => true,
+                'showajaxapi' => true
             ]
     ];

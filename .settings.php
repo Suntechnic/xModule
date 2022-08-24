@@ -1,11 +1,11 @@
 <?php
 return [
-        //'controllers' => [
-        //        'value' => [
-        //                    'namespaces' => [
-        //                        '\\X\\Module\\Ajax' => 'api',
-        //                    ],
-        //            ],
-        //        'readonly' => true,
-        //    ],
+        'controllers' => [
+                'value' => [
+                        'namespaces' => [
+                                '\\X\\Module\\Api' => 'api',
+                            ],
+                    ],
+                'readonly' => true,
+            ],
     ];

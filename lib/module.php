@@ -161,9 +161,18 @@ class Module extends \CModule
             );
     }
     
-    public function getSettings ()
+    public function getSettings (string $key='')
     {
-        return $this->getSetup('settings');
+        $dctSettings = $this->getSetup('settings');
+        if ($key) return $dctSettings[$key];
+        return $dctSettings;
+    }
+    
+    public function getAjaxControllers (): array
+    {
+        $refControllers = $this->getSettings('controllers')['value']['namespaces'];
+        if (!is_array($refControllers)) return [];
+        return $refControllers;
     }
     
     /*
@@ -209,6 +218,18 @@ class Module extends \CModule
 		return array_map(
 				function ($p) {return str_replace($this->MODULE_PATH_ABS.'/install/js/'.$this->MODULE_SPACE.'/','',$p);}, 
 				glob($this->MODULE_PATH_ABS.'/install/js/'.$this->MODULE_SPACE.'/[abcdefghijklmnopqrstuvwxyz\.]*')
+			);
+    }
+    #
+    
+    /*
+     * возвращает список папок с изображениями для модуля
+     * обычно /install/images/{MODULE_SPACE}/{MODULE_UID}
+    */
+    public function getImg () {
+		return array_map(
+				function ($p) {return str_replace($this->MODULE_PATH_ABS.'/install/images/'.$this->MODULE_SPACE.'/','',$p);}, 
+				glob($this->MODULE_PATH_ABS.'/install/images/'.$this->MODULE_SPACE.'/[abcdefghijklmnopqrstuvwxyz\.]*')
 			);
     }
     #
@@ -281,6 +302,21 @@ class Module extends \CModule
 		}
         
         
+        // картинки
+        // штатно размещаются в /install/images/{MODULE_SPACE}/{MODULE_UID}
+		$arImg = $this->getImg();
+		if (count($arImg)) {
+			foreach ($arImg as $GroupName) {
+				CopyDirFiles(
+						$this->MODULE_PATH_ABS.'/install/images/'.$this->MODULE_SPACE.'/'.$GroupName,
+						\Bitrix\Main\Application::getDocumentRoot().'/bitrix/images/'.$this->MODULE_SPACE.'/'.$GroupName,
+						true,
+						true
+					);
+			}
+		}
+        
+        
         // файлы админки
 		$arAdminFiles = $this->getAdminFiles();
 		if (count($arAdminFiles)) {
@@ -330,6 +366,19 @@ class Module extends \CModule
 		if (count($arJs)) {
 			foreach ($arJs as $libName) {
 				DeleteDirFilesEx('/bitrix/js/'.$this->MODULE_SPACE.'/'.$libName);
+			}
+		}
+        
+        // картинки
+		$arImg = $this->getImg();
+		if (count($arImg)) {
+			foreach ($arImg as $GroupName) {
+				CopyDirFiles(
+						$this->MODULE_PATH_ABS.'/install/images/'.$this->MODULE_SPACE.'/'.$GroupName,
+						\Bitrix\Main\Application::getDocumentRoot().'/bitrix/images/'.$this->MODULE_SPACE.'/'.$GroupName,
+						true,
+						true
+					);
 			}
 		}
 		
