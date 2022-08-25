@@ -1,6 +1,8 @@
 <?php
 namespace X\Module\Util;
 
+use Bitrix\Main\Localization\Loc;
+Loc::loadMessages(__FILE__);
 
 class Html
 {
@@ -41,11 +43,11 @@ class Html
             ><label
                     class="adm-designed-checkbox-label"
                     for="<?=$InputId?>"
-                    title="Выполнить"
+                    title="<?=Loc::getMessage('X_MODULE_UTIL_HTML_RUN')?>"
                 ></label>
             <?=$dctAgent['name']?>
             <?if ($TimeResult):?>
-            <strong>Выполнен. Время выполнения: <?=$TimeResult?></strong>
+            <strong><?=Loc::getMessage('X_MODULE_UTIL_HTML_RUNED')?><?=$TimeResult?></strong>
             <?endif?>
         <?
         $result = ob_get_contents();
@@ -71,9 +73,9 @@ class Html
             ><label
                     class="adm-designed-checkbox-label"
                     for="<?=$InputId?>"
-                    title="Удалить"
+                    title="<?=Loc::getMessage('X_MODULE_UTIL_HTML_DELETE')?>"
                 ></label>
-            Удалить
+            <?=Loc::getMessage('X_MODULE_UTIL_HTML_DELETE')?>
             <pre style="max-width: 100%; max-height: 640px; overflow-x: scroll; text-align:left;">
                 <?=$fileLog->getFileContents($fileLog->getPath());?>
             </pre>
