@@ -533,11 +533,13 @@ class Module extends \CModule
         
         $lstLogsFiles = [];
         $logDirectory = new \Bitrix\Main\IO\Directory($this->LogDirPath);
-        foreach ($logDirectory->getChildren() as $logFile) {
-            if ($logFile->isFile()
-                    && $logFile->getExtension() == 'log'
-                ) {
-                $lstLogsFiles[] = $logFile;
+        if ($logDirectory->isExists() && $logDirectory->isDirectory()) {
+            foreach ($logDirectory->getChildren() as $logFile) {
+                if ($logFile->isFile()
+                        && $logFile->getExtension() == 'log'
+                    ) {
+                    $lstLogsFiles[] = $logFile;
+                }
             }
         }
         

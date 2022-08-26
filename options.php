@@ -28,45 +28,34 @@ $refAjaxControllers = $selfModule->getAjaxControllers();
 
 $lstTabs = [];
 
-if ($lstModuleOptions) $lstTabs[] = [
-		'DIV' => 'options_module',
-		'TAB' => 'Общие параметры', 'ICON'=>'main_user_edit', 'TITLE'=> 'Общие параметры модуля'
-	];
+
+
+
+
+if ($lstModuleOptions && $dctTab = \X\Module\Util\Options::getTab($selfModule,'options')) $lstTabs[] = $dctTab;
 
 	
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Дополнительные вкладки модуля
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-if ($lstModuleAgents && $selfModule->getConfig('optionspage','showagents')) $lstTabs[] = [
-		'DIV' => 'agents_module',
-		'TAB' => 'Агенты', 'ICON'=>'main_user_edit', 'TITLE'=> 'Агенты модуля'
-	];
 
-if ($refAjaxControllers && $selfModule->getConfig('optionspage','showajaxapi')) $lstTabs[] = [
-		'DIV' => 'ajax_module',
-		'TAB' => 'Ajax', 'ICON'=>'main_user_edit', 'TITLE'=> 'Ajax API модуля'
-	];
 
-if ($lstLogs && $selfModule->getConfig('optionspage','showlogs')) $lstTabs[] = [
-		'DIV' => 'logs_module',
-		'TAB' => 'Журналы', 'ICON'=>'main_user_edit', 'TITLE'=> 'Журналы модуля'
-	];
-	
-if ($lstModuleOptionsTech && $selfModule->getConfig('optionspage','showtechoptins')) $lstTabs[] = [
-		'DIV' => 'options_tech_module',
-		'TAB' => 'Технические параметры', 'ICON'=>'main_user_edit', 'TITLE'=> 'Технические параметры модуля'
-	];
-
+if ($lstModuleAgents
+		&& $dctTab = \X\Module\Util\Options::getTab($selfModule,'agents')) $lstTabs[] = $dctTab;
+if ($refAjaxControllers
+		&& $dctTab = \X\Module\Util\Options::getTab($selfModule,'ajax')) $lstTabs[] = $dctTab;
+if ($lstLogs
+		&& $dctTab = \X\Module\Util\Options::getTab($selfModule,'logs')) $lstTabs[] = $dctTab;
+if ($lstModuleOptionsTech
+		&& $dctTab = \X\Module\Util\Options::getTab($selfModule,'optionstech')) $lstTabs[] = $dctTab;
 $lstMD = [
-		'README' => $selfModule->getDoc('README'),
-		'CHANGELOG' => $selfModule->getDoc('CHANGELOG'),
+		'readme' => $selfModule->getDoc('README'),
+		'changelog' => $selfModule->getDoc('CHANGELOG'),
 	];
 foreach ($lstMD as $key=>$val) {
-	if ($val && strlen($val) > 2 && $selfModule->getConfig('optionspage','showreadme')) $lstTabs[] = [
-			'DIV' => $key,
-			'TAB' => $key, 'ICON'=>'main_user_edit'
-		];
+	if ($val && strlen($val) > 2
+			&& $dctTab = \X\Module\Util\Options::getTab($selfModule,$key)) $lstTabs[] = $dctTab;
 }
 
 
@@ -153,50 +142,48 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_aft
     $tabControl->Begin();
 	foreach ($lstTabs as $dctTab) {
 		$tabControl->BeginNextTab();
-		if ($dctTab['DIV'] == 'options_module') {
+		
+		if ($dctTab['SUBTITLE'])
+				echo \X\Module\Util\Html::adminTabRow($dctTab['SUBTITLE']);
+		
+		
+		if ($dctTab['DIV'] == 'options') {
 			foreach ($lstModuleOptions as $codeOption=>$dctOpt):
 				echo \X\Module\Util\Html::adminTabRow(
 						$dctOpt['title'],
 						\X\Module\Util\Html::optionInput($codeOption, $dctOpt, $selfModule->getOption($codeOption))
 					);
 			endforeach;
-		} elseif ($dctTab['DIV'] == 'options_tech_module') {
-			echo \X\Module\Util\Html::adminTabRow('Внимание! Не изменяйте эти параметры если не знаете что это такое!');
+		} elseif ($dctTab['DIV'] == 'optionstech') {
+			if ($dctTab['NOTE'])
+					echo \X\Module\Util\Html::adminTabRow($dctTab['NOTE']);
+			
 			foreach ($lstModuleOptionsTech as $codeOption=>$dctOpt):
 				echo \X\Module\Util\Html::adminTabRow(
 						$dctOpt['title'],
 						\X\Module\Util\Html::optionInput($codeOption, $dctOpt, $selfModule->getOption($codeOption))
 					);
 			endforeach;
-		} elseif ($dctTab['DIV'] == 'agents_module') {
+		} elseif ($dctTab['DIV'] == 'agents') {
 			
 			$request = \Bitrix\Main\Application::getInstance()->getContext()->getRequest();
 			$arAgentsResult = $request->get('agents_result');
 			
-			echo \X\Module\Util\Html::adminTabRow('Отмеченные агенты модуля будут выполнены после сохранения настроек в том же хите.');
-			
 			foreach ($lstModuleAgents as $i=>$dctAgent):
 				echo \X\Module\Util\Html::adminTabRow(
 						$dctAgent['title'],
-						\X\Module\Util\Html::optionInput($dctAgent, $arAgentsResult[$i])
+						\X\Module\Util\Html::agent($dctAgent, $arAgentsResult[$i])
 					);
 			endforeach;
-		} elseif ($dctTab['DIV'] == 'ajax_module') {
+		} elseif ($dctTab['DIV'] == 'ajax') {
 			
 			foreach ($refAjaxControllers as $class=>$alias):
 				echo \X\Module\Util\Html::adminTabRow(
-						$class.'=>'.$alias
+						$class.' => '.$alias
 					);
 			endforeach;
 			
-		} elseif ($dctTab['DIV'] == 'logs_module') {
-			
-			if ($selfModule->getOption('debug') == 'Y'):
-				echo \X\Module\Util\Html::adminTabRow('Сейчас отладка включена.
-					Для остановки записи в журналы, снимите флажок <b>Отладка</b> на вкладке <b>Общие параметры</b>.');
-			
-			endif;
-			
+		} elseif ($dctTab['DIV'] == 'logs') {
 			foreach ($lstLogs as $i=>$fileLog):
 				echo \X\Module\Util\Html::adminTabRow(
 						\X\Module\Util\Html::log($i,$fileLog)

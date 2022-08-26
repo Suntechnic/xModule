@@ -1,11 +1,12 @@
 <?php
 return [
         'optionspage' => [
-                'showlogs' => true,
-                'showagents' => true,
-                'showtechoptins' => true,
-                'showreadme' => true,
-                'showchangelog' => true,
-                'showajaxapi' => true
+                'showtab_options' => true,
+                'showtab_agents' => true,
+                'showtab_ajax' => true,
+                'showtab_logs' => true,
+                'showtab_optionstech' => true,
+                'showtab_readme' => true,
+                'showtab_changelog' => true,
             ]
     ];
