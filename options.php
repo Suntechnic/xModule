@@ -79,6 +79,8 @@ if($REQUEST_METHOD == "POST" // проверка метода вызова ст�
 		foreach ($lstModuleOptions as $codeOption=>$dctOpt) {
 			if (isset($refOptionsFromRequest['module'][$codeOption])) {
 				$selfModule->setOption($codeOption,$refOptionsFromRequest['module'][$codeOption]);
+			} else {
+				$selfModule->setOption($codeOption,null);
 			}
 		}
 		
@@ -145,6 +147,9 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_aft
 		
 		if ($dctTab['SUBTITLE'])
 				echo \X\Module\Util\Html::adminTabRow($dctTab['SUBTITLE']);
+				
+				
+		
 		
 		
 		if ($dctTab['DIV'] == 'options') {
@@ -155,9 +160,6 @@ require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_aft
 					);
 			endforeach;
 		} elseif ($dctTab['DIV'] == 'optionstech') {
-			if ($dctTab['NOTE'])
-					echo \X\Module\Util\Html::adminTabRow($dctTab['NOTE']);
-			
 			foreach ($lstModuleOptionsTech as $codeOption=>$dctOpt):
 				echo \X\Module\Util\Html::adminTabRow(
 						$dctOpt['title'],
