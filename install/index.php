@@ -14,3 +14,7 @@ class x_module extends \X\Module\Module
     */
 }
 
+/*
+public function DoInstall () {}
+public function DoUninstall () {}
+*/

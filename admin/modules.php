@@ -38,6 +38,7 @@ if($REQUEST_METHOD == "POST" // проверка метода вызова ст�
     $request = \Bitrix\Main\Application::getInstance()->getContext()->getRequest();
 	
 	if ($request->get('create')) {
+		// получение параметров модуля из запроса (формы)
 		$dctOptionsModule = $request->get('options')['module'];
 		
 		$dctProps = \X\Module\Modules::getModuleProps($dctOptionsModule['id']);
@@ -79,33 +80,39 @@ if($REQUEST_METHOD == "POST" // проверка метода вызова ст�
 			
 			// процедуры обработки файлов
 			
-			//install/index.php
-			$install_index = new \Bitrix\Main\IO\File($MODULE_PATH_ABS.'/install/index.php');
-			$Install_indexContent = $install_index->getContents();
-			$Install_indexContent = str_replace(
-					[
-							'X\Module','x_module','x.module','Minisol','https://minisol.ru'
-						],
-					[		$dctProps['CLASS'],	$dctProps['MODULE_CLASS'],$dctProps['MODULE_ID'],$PARTNER_NAME,$PARTNER_URI
-						],
-					$Install_indexContent
-				);
-			$install_index->putContents($Install_indexContent);
+			// замена литералов и имен классов
+			$lstDepNames = [
+					'/install/index.php',
+					'/install/step.php',
+					'/install/unstep.php',
+					'/lang/ru/lib/module.php'
+				];
+			foreach ($lstDepNames as $DepName) {
+				$depFile = new \Bitrix\Main\IO\File($MODULE_PATH_ABS.$DepName);
+				$DepFileContent = $depFile->getContents();
+				$DepFileContent = str_replace(
+						[
+								'X\Module',
+								'x_module',
+								'x.module',
+								'Minisol',
+								'https://minisol.ru',
+								'X_MODULE_',
+							],
+						[
+								$dctProps['CLASS'],
+								$dctProps['MODULE_CLASS'],
+								$dctProps['MODULE_ID'],
+								$PARTNER_NAME,
+								$PARTNER_URI,
+								$dctProps['MODULE_SP']
+							],
+						$DepFileContent
+					);
+				$depFile->putContents($DepFileContent);
+			}
 			
-			//lang/ru/lib/module.php
-			$lang_ru_lib_module = new \Bitrix\Main\IO\File($MODULE_PATH_ABS.'/lang/ru/lib/module.php');
-			$Lang_ru_lib_moduleContent = $lang_ru_lib_module->getContents();
-			$Lang_ru_lib_moduleContent = str_replace(
-					[
-							'X_M_MODULE_',				'Minisol',		'https://minisol.ru'
-						],
-					[		$dctProps['MODULE_SP'],		$PARTNER_NAME,	$PARTNER_URI
-						],
-					$Lang_ru_lib_moduleContent
-				);
-			$lang_ru_lib_module->putContents($Lang_ru_lib_moduleContent);
-			
-			//lib/module.php
+			//Генерация lib/module.php
 			$lib_module = new \Bitrix\Main\IO\File($MODULE_PATH_ABS.'/lib/module.php');
 			$lib_module->putContents(
 '<?php
@@ -143,11 +150,13 @@ class Module extends \X\Module\Module
 			// удаление лишних файлов и папок
 			$lstPatternsForDel = [
 					'/admin',
+					'/composer',
 					'/lib/util',
 					'/lib/admin.php',
 					'/lib/modules.php',
 					
 					'/lang/ru/lib/admin.php',
+					'/lang/ru/lib/util',
 					'/lang/ru/admin/modules.php',
 					
 					'/*.md',

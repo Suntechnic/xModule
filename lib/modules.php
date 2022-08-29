@@ -85,7 +85,7 @@ class Modules implements \Iterator
 		$dctProps['MODULE_ID'] = $dctProps['MODULE_PNS'].'.'.$dctProps['MODULE_NAME'];
 		
 		$dctProps['MODULE_CLASS'] = $dctProps['MODULE_PNS'].'_'.$dctProps['MODULE_NAME'];
-		$dctProps['MODULE_SP'] = strtoupper($dctProps['MODULE_PNS']).'_M_'.strtoupper($dctProps['MODULE_NAME']).'_';
+		$dctProps['MODULE_SP'] = strtoupper($dctProps['MODULE_PNS']).'_'.strtoupper($dctProps['MODULE_NAME']).'_';
 		
 		if ($dctProps['MODULE_DIR'] == $dctProps['MODULE_ID']) {
 			$dctProps['PNS'] = ucfirst($dctProps['MODULE_PNS']);
