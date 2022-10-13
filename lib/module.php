@@ -518,7 +518,7 @@ class Module extends \CModule
         if (!$this->debug) return;
         
         $Data = "-------------------------------------------------------------------------------\n"
-                .date()."\n"
+                .date('d.m.Y H:i:s')."\n"
                 .$Msg."\n"
                 .print_r($arData,true)."\n\n";
         \Bitrix\Main\IO\File::putFileContents($this->LogDirPath.'/'.$FileName.'.log', $Data, \Bitrix\Main\IO\File::APPEND);
