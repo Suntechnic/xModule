@@ -23,6 +23,9 @@ foreach ($lstModuleOptionsSets as $CodeOption=>$ValueOption) {
 // агенты
 $lstModuleAgents = $selfModule->getAgents();
 
+// логи
+$lstLogs = $selfModule->getLogs();
+
 // ajax контроллеры
 $refAjaxControllers = $selfModule->getAjaxControllers();
 
