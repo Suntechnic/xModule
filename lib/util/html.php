@@ -57,7 +57,7 @@ class Html
     }
     
     
-    public static function log (integer $i, $fileLog): string
+    public static function log (int $i, $fileLog): string
     {
         ob_start();
         $InputId = 'log_'.$i.'_'.(new \Bitrix\Main\Type\RandomSequence)->randString(8);
