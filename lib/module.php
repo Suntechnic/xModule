@@ -65,7 +65,7 @@ class Module extends \CModule
         // отладка
         $this->LogDirPath =
             \Bitrix\Main\Application::getDocumentRoot()
-            .'/local/log/modules/'
+            .'/local/.logs/modules/'
             .$this->MODULE_DIR;
         
         if ($this->getOption('debug') == 'Y') $this->debug = 1;
