@@ -111,7 +111,27 @@ class Module extends \CModule
     */
     public function getHandlers (): array
     {
-        return $this->getSetup('handlers');
+        $lstHandlers = $this->getSetup('handlers');
+        $lstDependencies = $this->getDependencies(); // дополянем массив перехватчиков зависимостями
+        foreach ($lstDependencies as $ModuleName) {
+            $lstHandlers[] = [
+                    'module' => $ModuleName,
+                    'event' => 'OnModuleUnInstall',
+                    'class' => $this->MODULE_NS.'\Module',
+                    'method' => 'stopUnInstallDependence',
+                    'compatible' => true
+                ];
+        }
+
+        return $lstHandlers;
+    }
+
+    /*
+     * возвращает список зависимостей
+    */
+    public function getDependencies (): array
+    {
+        return $this->getSetup('dependencies');
     }
     
     /*
@@ -176,7 +196,7 @@ class Module extends \CModule
     }
     
     /*
-     * возвращает паметр конфигурации, или секуцию конфигурации, или полностью конфигурационный массив
+     * возвращает параметр конфигурации, или секуцию конфигурации, или полностью конфигурационный массив
     */
 	public function getConfig (string $section='', string $param='')
     {
@@ -420,8 +440,17 @@ class Module extends \CModule
     }
 	
 	public function InstallEvents () {
+        $eventManager = \Bitrix\Main\EventManager::getInstance();
 		foreach ($this->getHandlers() as $arEvent) {
-            \Bitrix\Main\EventManager::getInstance()->registerEventHandler(
+            if ($arEvent['compatible']) {
+                $eventManager->registerEventHandlerCompatible(
+                        $arEvent['module'],
+                        $arEvent['event'],
+                        $this->MODULE_ID,
+                        $arEvent['class'], 
+                        $arEvent['method']
+                    );
+            } else $eventManager->registerEventHandler(
                     $arEvent['module'],
 					$arEvent['event'],
 					$this->MODULE_ID,
@@ -429,12 +458,14 @@ class Module extends \CModule
 					$arEvent['method']
                 );
 		}
+
 		return true;
 	}
 
 	public function UnInstallEvents () {
+        $eventManager = \Bitrix\Main\EventManager::getInstance();
 		foreach ($this->getHandlers() as $arEvent) {
-			\Bitrix\Main\EventManager::getInstance()->unRegisterEventHandler(
+			$eventManager->unRegisterEventHandler(
 					$arEvent['module'],
 					$arEvent['event'],
 					$this->MODULE_ID,
@@ -442,9 +473,13 @@ class Module extends \CModule
 					$arEvent['method']
 				);
 		}
+
+
 		return true;
 	}
     
+
+    // агенты
     public function getAgents ()
     {
         return $this->getSetup('agents');
@@ -508,6 +543,14 @@ class Module extends \CModule
 				GetMessage($this->MODULE_SP."INSTALL_TITLE"),
 				$this->MODULE_PATH_ABS.'/install/unstep.php'
 			);
+    }
+
+
+    public static function stopUnInstallDependence($rtt='--',$rtt2='--') {
+        print_r($rtt,$rtt2); die();
+        global $APPLICATION;
+		$APPLICATION->ThrowException('module required for '.'2');
+		return false;
     }
 	
     

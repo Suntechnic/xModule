@@ -95,8 +95,8 @@ if($REQUEST_METHOD == "POST" // проверка метода вызова ст�
 								'X\Module',
 								'x_module',
 								'x.module',
-								'Minisol',
-								'https://minisol.ru',
+								'x',
+								'https://x.ru',
 								'X_MODULE_',
 							],
 						[
@@ -118,7 +118,7 @@ if($REQUEST_METHOD == "POST" // проверка метода вызова ст�
 '<?php
 namespace '.$dctProps['CLASS'].';
 
-\Bitrix\Main\Loader::includeModule(\'x.module\');
+if (!\Bitrix\Main\Loader::includeModule(\'x.module\')) return;
 \Bitrix\Main\Localization\Loc::loadMessages(__FILE__);
 
 class Module extends \X\Module\Module
