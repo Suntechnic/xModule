@@ -16,6 +16,7 @@ class Module extends \CModule
     public $MODULE_BXCLASS; // bitrix-класс модуля (x_module)
     
     public $MODULE_NS; // неймспейс классов модуля (\X\Module)
+    public $MODULE_SP; // строковой префикс модуля
 	
 	public $MODULE_DIR; // имя папки модуля == MODULE или MODULE_ID
     public $MODULE_PATH; // путь к папке модуля
@@ -155,36 +156,44 @@ class Module extends \CModule
     /*
      * возвращает ключ хранения опции в БД по коду опции
     */
-    public function getOptionKey (string $code): string
+    public function getOptionKey (string $Code): string
     {
-        return $code;
+        return $Code;
     }
     
     
-    public function getOption (string $code)
+    public function getOption (string $Code)
     {
         $refOptions = $this->getOptions();
-        if ($refOptions[$code]) $default = $refOptions[$code]['default'];
-        return \Bitrix\Main\Config\Option::get(
+        if ($refOptions[$Code]) $default = $refOptions[$Code]['default'];
+        $Value = \Bitrix\Main\Config\Option::get(
                 $this->MODULE,
-                $this->getOptionKey($code),
+                $this->getOptionKey($Code),
                 $default
             );
+        if ($refOptions[$Code] && $refOptions[$Code]['validate']) {
+            $Value = $refOptions[$Code]['validate']($Value);
+        } 
+        return $Value;
     }
     
-    public function setOption (string $code, $value)
+    public function setOption (string $Code, $Value)
     {
+        $refOptions = $this->getOptions();
+        if ($refOptions[$Code] && $refOptions[$Code]['validate']) {
+            $Value = $refOptions[$Code]['validate']($Value);
+        } 
         return \Bitrix\Main\Config\Option::set(
                 $this->MODULE,
-                $this->getOptionKey($code),
-                $value
+                $this->getOptionKey($Code),
+                $Value
             );
     }
     
-    public function getSettings (string $key='')
+    public function getSettings (string $Key='')
     {
         $dctSettings = $this->getSetup('settings');
-        if ($key) return $dctSettings[$key];
+        if ($Key) return $dctSettings[$Key];
         return $dctSettings;
     }
     
@@ -368,8 +377,8 @@ class Module extends \CModule
 		// компоненты
 		$arComponents = $this->getComponents();
 		if (count($arComponents)) {
-			foreach ($arComponents as $compName) {
-				DeleteDirFilesEx('/bitrix/components/'.$this->MODULE_SPACE.'/'.$comp_name);
+			foreach ($arComponents as $CompName) {
+				DeleteDirFilesEx('/bitrix/components/'.$this->MODULE_SPACE.'/'.$CompName);
 			}
 		}
         
