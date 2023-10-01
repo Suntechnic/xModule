@@ -216,6 +216,8 @@ class Module extends \CModule
     }
     #
 	
+    
+
     /*
      * вовзрващает компоненты модуля
     */
@@ -227,6 +229,7 @@ class Module extends \CModule
 			);
     }
     #
+
     
     /*
      * возвращает список файлов из папки /admin/
@@ -239,8 +242,23 @@ class Module extends \CModule
 			);
     }
     #
-    
+
+
+
     /*
+     * вовзрващает папки для установки
+    */
+	public function getFolders4Install (string $FolderName)
+    {
+        $StoragePath = $this->MODULE_PATH_ABS.'/install/'.$FolderName.'/';
+		return array_map(
+				function ($p) use ($StoragePath) {return str_replace($StoragePath,'',$p);}, 
+				glob($StoragePath.'[abcdefghijklmnopqrstuvwxyz\.]*')
+			);
+    }
+    #
+
+     /*
      * возвращает список библиотек модуля
     */
     public function getJs() {
@@ -301,7 +319,7 @@ class Module extends \CModule
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // методы установки
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    
+    const INSTALLEDFOLDERS = ['services','js','tools','images'];
     public function InstallFiles () {
         
 		// компоненты
@@ -317,34 +335,31 @@ class Module extends \CModule
 			}
 		}
         
-        // js
-		$arJs = $this->getJs();
-		if (count($arJs)) {
-			foreach ($arJs as $libName) {
-				CopyDirFiles(
-						$this->MODULE_PATH_ABS.'/install/js/'.$this->MODULE_SPACE.'/'.$libName,
-						\Bitrix\Main\Application::getDocumentRoot().'/bitrix/js/'.$this->MODULE_SPACE.'/'.$libName,
-						true,
-						true
-					);
-			}
-		}
-        
-        
-        // картинки
-        // штатно размещаются в /install/images/{MODULE_SPACE}/{MODULE_UID}
-		$arImg = $this->getImg();
-		if (count($arImg)) {
-			foreach ($arImg as $GroupName) {
-				CopyDirFiles(
-						$this->MODULE_PATH_ABS.'/install/images/'.$this->MODULE_SPACE.'/'.$GroupName,
-						\Bitrix\Main\Application::getDocumentRoot().'/bitrix/images/'.$this->MODULE_SPACE.'/'.$GroupName,
-						true,
-						true
-					);
-			}
-		}
-        
+        // установка папок
+        foreach ($this::INSTALLEDFOLDERS as $FolderName) {
+
+            $StoragePath = $this->MODULE_PATH_ABS.'/install/'.$FolderName.'/';
+            $lstSubFolders = array_map(
+                    function ($p) use ($StoragePath) {return str_replace($StoragePath,'',$p);}, 
+                    glob($StoragePath.'[abcdefghijklmnopqrstuvwxyz\.]*')
+                );
+            if (is_array($lstSubFolders) && count($lstSubFolders)) {
+                foreach ($lstSubFolders as $SubFolderName) {
+                    $Source = $StoragePath.$SubFolderName;
+                    $Target = \Bitrix\Main\Application::getDocumentRoot()
+                            .'/bitrix/'
+                            .$FolderName.'/'
+                            .$this->MODULE_ID.'/'
+                            .$SubFolderName;
+                    CopyDirFiles(
+                            $Source,
+                            $Target,
+                            true,
+                            true
+                        );
+                }
+            }
+        }
         
         // файлы админки
 		$arAdminFiles = $this->getAdminFiles();
@@ -390,26 +405,10 @@ class Module extends \CModule
 			}
 		}
         
-        // js
-		$arJs = $this->getJs();
-		if (count($arJs)) {
-			foreach ($arJs as $libName) {
-				DeleteDirFilesEx('/bitrix/js/'.$this->MODULE_SPACE.'/'.$libName);
-			}
-		}
-        
-        // картинки
-		$arImg = $this->getImg();
-		if (count($arImg)) {
-			foreach ($arImg as $GroupName) {
-				CopyDirFiles(
-						$this->MODULE_PATH_ABS.'/install/images/'.$this->MODULE_SPACE.'/'.$GroupName,
-						\Bitrix\Main\Application::getDocumentRoot().'/bitrix/images/'.$this->MODULE_SPACE.'/'.$GroupName,
-						true,
-						true
-					);
-			}
-		}
+        // деустановка папок
+        foreach ($this::INSTALLEDFOLDERS as $FolderName) {
+            DeleteDirFilesEx('/bitrix/'.$FolderName.'/'.$this->MODULE_ID);
+        }
 		
 		// файлы в upload если модуль насоздавал
 		DeleteDirFilesEx('/upload/'.$this->MODULE_ID);
